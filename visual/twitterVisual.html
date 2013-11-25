@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>VISUAL</title>
+		<script src="d3.js" charset="utf-8"></script>
+		<script src="http://code.jquery.com/jquery-1.10.2.min.js" charset="utf-8"></script>
+		<link href="css/bootstrap.css" media="all" type="text/css" rel="stylesheet">
+		<link href='http://fonts.googleapis.com/css?family=Andika' rel='stylesheet' type='text/css'>
+	</head>
+	<body>
+		<style>
+			body{
+				font-family:'Andika', sans-serif;
+			}
+			#tooltip {
+				position: absolute;
+				width: 140px;
+				height: auto;
+				padding: 5px;
+				background-color: white;
+				-webkit-border-radius: 10px;
+				-moz-border-radius: 10px;
+				border-radius: 5px;
+				pointer-events: none;
+			}
+			#tooltipContainer {
+				display: none;
+			}
+			#tooltip p {
+				margin: 0;
+				font-family:'Andika', sans-serif;
+				font-size: 14px;
+				line-height: 18px;
+				opacity:0.7;
+			}
+		</style>
+			
+		<div style="margin:3%;">
+			<div><p style="font-size:24px; text-align: center">Twitter IPO Social Media Sentiment</p></div>
+			<div><p style="font-size:16px; text-align: left">Select type of sentiment:</p></div>
+			<div class="controls">
+				<div class="btn-group" data-toggle="buttons-radio" >
+					<button class="btn" onclick="separarClusters('all')">All</button>
+					<button class="btn" onclick="separarClusters('positive')">Positive</button>
+					<button class="btn" onclick="separarClusters('negative')">Negative</button>
+				</div>
+			</div>
+		</div>
+		
+		<div>
+			<div class="graph" align="center" style="position:relative; width:1000px; height:940px; margin:auto">
+				<div id="tooltipContainer" class="tooltipContainer">
+					<div id="tooltip" class="hidden">
+						<strong><p id="clusterTitle" style="text-align:center"></p></strong>
+						<!--<p><strong>Fabricante: </strong><span id="tool_fab">100</span></p>
+						<p><strong>Alerta: </strong><span id="tool_alerta">100</span></p>-->
+		   			</div>
+		   		</div>
+			</div>
+		<div>
+		<div style="position: absolute; top:22%; left:3%">
+			<img src="img/negativeBird.png" height="160" width="160"></br>
+			<img src="img/positiveBird.png" height="160" width="160">
+		</div>
+		
+		
+	</body>
+	<script type="text/javascript">
+		var width = 850, height = 940; //Canvas dimension
+		var nodesNumber = 200, //Number of nodes
+		    clustersNumber = 2,	 //Clusters Quantity
+		    padding = 6,
+		    radius = d3.scale.sqrt().range([0, 15]),
+		    color = ["#30AA60","#DB1453"];
+
+
+		var nodes = [{"type":"positive", "radius":22,"percentage":"22%", "comments":"","title":"EXCITED ABOUT IPO"},
+								{"type":"positive", "radius":18,"percentage":"18%","comments":"","title":"PRICING NEWS"},
+								{"type":"positive", "radius":7,"percentage":"7%","comments":"","title":"COMPARISON TO FACEBOOK"},
+								{"type":"positive", "radius":2,"percentage":"2%","comments":"","title":"I BOUGHT $TWTR"},
+								{"type":"positive", "radius":1,"percentage":"1%","comments":"","title":"SHOULD HAVE BOUGHT $TWTR"},
+								{"type":"positive", "radius":1,"percentage":"1%","comments":"","title":"SUGGESTIONS TO INVEST"},
+								{"type":"negative", "radius":24,"percentage":"24%","comments":"","title":"$TWTR IS OVER VALUED"},
+								{"type":"negative", "radius":24,"percentage":"24%","comments":"","title":"SUGGESTIONS NOT TO INVEST"},
+								{"type":"negative", "radius":3,"percentage":"3%","comments":"","title":"WORRIED ABOUT IPO"},
+								];
+
+
+		nodes.forEach(function(d) {
+			d.radius = radius(d.radius);
+    		d.x = Math.random()*width;
+    		d.y = Math.random()*height;
+    		if(d.type == "positive"){
+    			d.color = color[0];
+    		}else{
+    			d.color = color[1];
+    		}
+		});
+
+
+
+	    function manageForceField(){
+	    	this.gravity = -0.01,
+			this.damper = 0.1,
+	    	this.vis = null,
+	    	this.force = null,
+	    	this.circlesGroup = null,
+	    	this.circles = null,
+	    	this.center = {x:width/2, y:height/3.6},
+	    	clusterCenters = [{"x":250,"y":105},{"x":450,"y":105},{"x":650,"y":105},{"x":250,"y":350},{"x":450,"y":350},{"x":650,"y":350},{"x":250,"y":105},{"x":450,"y":105},{"x":650,"y":105}],
+	    	that = this,
+	    	activeCluster = "all";
+
+	    	this.insertSvg = function(){
+	    		this.vis = d3.select(".graph").append("svg")
+					    .attr("width", width)
+					    .attr("height", height)
+					    //.style("margin-top","-10%")
+					    .attr("align","center")
+					  	.attr("id", "svg_vis");
+	    	}
+	    	this.insertCircles = function(){
+	    		circlesGroup = this.vis.selectAll(".node")
+						    .data(nodes)
+						  	.enter().append("g")
+						  	.attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; })
+						    .attr("class", "node");
+						    
+	    		circles = circlesGroup.append("circle")
+					    .attr("r", function(d) { return d.radius })
+					    .style("fill", function(d) { return d.color; })
+					    .attr("title",function(d){return d.title});
+
+				circlesGroup.append("text")
+      				.attr("dy", ".3em")
+				      .style("text-anchor", "middle")
+				      .style("fill", "#ffffff")
+				      .style("font-family", "Arial")
+				      .style("font-size",function(d){return (radius(d.radius)/3.7)+"px"})
+				      .text(function(d) { return d.percentage });
+						
+	    	}
+	    	this.groupAll = function(){this.force = d3.layout.force()
+	      						.nodes(nodes)
+	      						.size([width, height])
+	      						.gravity(this.gravity)
+	      						.charge(function(d){return (Math.pow(d.radius, 2.0) / 5)*(-1)})
+	      						.friction(0.9)
+	      						.on("tick",this.groupAllTick)
+	      						.start(); },
+	      	this.breakGroups = function(){this.force = d3.layout.force()
+	      						.nodes(nodes)
+	      						.size([width, height])
+	      						.gravity(this.gravity)
+	      						.charge(function(d){return 0})
+	      						.friction(0.9)
+	      						.on("tick",this.groupClustersTick)
+	      						.start();
+
+	      						//Append text under circle
+	      						circles.each(function(d,i){
+
+	      							if(that.activeCluster == d.type){
+	      								center = clusterCenters[i];
+	      								
+		      							var div = d3.select("#tooltip")
+										           .style("left", center.x + "px")
+										           .style("top", center.y+80 + "px")
+										           .classed("hidden",false);
+
+										$("#clusterTitle").html(d.title);
+
+
+										var append = $("#tooltipContainer").clone();
+										append.children("#tooltip").addClass("tooltipAdded");
+										//$(".graph").append(append.html()).show("slow");
+
+										$(append).hide().appendTo(".graph").fadeIn(1500);
+
+	      							};
+	      						})
+	      					},
+      		this.groupAllTick = function(e){
+		    	circles.each(function(d){
+		    		d.x = d.x + (that.center.x - d.x) * (0.1 + 0.02) * e.alpha;
+	      			d.y = d.y + (that.center.y - d.y) * (0.1 + 0.02) * e.alpha;
+		    	});
+	    		circlesGroup.attr("transform", function(d,i){return "translate(" + [d.x, d.y] + ")";})
+
+      		},
+      		this.groupClustersTick = function(e){
+
+      			circles.each(function(d,i){
+      				this.center = clusterCenters[i];
+      				if(that.activeCluster != d.type){
+      					this.center = {"x":1100,"y":469};
+      				}
+		    		d.x = d.x + (this.center.x - d.x) * (0.1 + 0.02) * e.alpha;
+	      			d.y = d.y + (this.center.y - d.y) * (0.1 + 0.02) * e.alpha;
+		    	});
+	    		circlesGroup.attr("transform", function(d,i){return "translate(" + [d.x, d.y] + ")";});	
+      		},
+      		this.clusterBuilder = function(nodes, clustersPerRow, clusterTypes){
+				var clusterCenters = [];
+				var clusters = {};
+				for (var i = 0; i < clusterTypes.length; i++) {
+					//var differentTypes = {};
+					types = {};
+					for (var j = 0; j < nodes.length; j++) {
+						types[nodes[j][clusterTypes[i]]] = 1;  
+					};
+					clusters[clusterTypes[i]] = types;
+				};
+		
+				for (var clusterType in clusters) {
+					var numberOfSubClusters = Object.keys(clusters[clusterType]).length;
+					var plusX = width/(numberOfSubClusters+1);
+					var x = plusX;
+					for (var key in clusters[clusterType]) {
+						clusters[clusterType][key] = {x:x,y:500};
+						x = x + plusX;
+					};
+				};
+				return clusters;
+			}
+	    }
+	    
+	   	var manager = new manageForceField();
+	   	manager.insertSvg();
+	   	manager.insertCircles();
+	   	manager.groupAll();
+	   	var group = false;
+	   	function separarClusters(activeCluster){
+	   		$( ".tooltipAdded" ).remove();
+	   		manager.force.stop();
+	   		manager.activeCluster = activeCluster;
+	   		if(activeCluster != "all"){
+	   			manager.gravity = 0.00;
+	   			manager.breakGroups();
+	   			group = true;
+	   		}else{
+	   			manager.gravity = -0.01;
+	   			manager.groupAll();
+	   			group = false;
+	   		}
+	   		
+	   	}
+	</script>
+</html>

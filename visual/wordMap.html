@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>VISUAL</title>
+		<script src="d3.js" charset="utf-8"></script>
+		<link href='http://fonts.googleapis.com/css?family=Andika' rel='stylesheet' type='text/css'>
+		<script src="http://code.jquery.com/jquery-1.10.2.min.js" charset="utf-8"></script>
+	</head>
+	<body>
+		<style>
+			body{
+				font-family:'Andika', sans-serif;
+			}	
+			.node {
+  				stroke-width: 1.5px;
+			}
+			#tooltip {
+				position: absolute;
+				width: 25px;
+				height: auto;
+				padding: 5px;
+				background-color: black;
+				-webkit-border-radius: 10px;
+				-moz-border-radius: 10px;
+				border-radius: 5px;
+				-webkit-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				-moz-box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.4);
+				pointer-events: none;
+				cursor: pointer;
+				opacity:0.7;
+				color:white;
+				text-align: center;
+     		}
+     
+			#tooltip.hidden {
+				display: none;
+			}
+     
+			#tooltip p {
+				margin: 0;
+				font-family: sans-serif;
+				font-size: 12px;
+				line-height: 18px;
+				cursor: pointer;
+			}
+		</style>
+		<div><p style="font-size:24px; text-align: center">@Mashwork Most Tweeted Words</p></div>
+
+		<div>
+			<div class="graph"  align="center" style="margin-top:-4%; position:relative;margin:auto; width:1000; height:940">
+				<div id="tooltipContainer" class="tooltipContainer">
+				<div id="tooltip" class="hidden">
+					<p><strong><span id="count"></span></strong></p>
+	   			</div>
+			</div>
+		</div>
+		
+		
+
+		
+	</body>
+
+	<script type="text/javascript">
+		var json = [{"word":"social","count":417},{"word":"media","count":301},{"word":"your","count":236},{"word":"this","count":214},{"word":"facebook","count":194},{"word":"what","count":187},{"word":"with","count":182},{"word":"that","count":180},{"word":"twitter","count":179},{"word":"mashwork","count":156},{"word":"thanks","count":146},{"word":"great","count":134},{"word":"mashable","count":126},{"word":"google","count":122},{"word":"about","count":119},{"word":"from","count":116},{"word":"have","count":109},{"word":"more","count":107},{"word":"infographic","count":105},{"word":"will","count":104},{"word":"just","count":93},{"word":"happy","count":86},{"word":"marketing","count":84},{"word":"check","count":83},{"word":"forbes","count":81},{"word":"love","count":76},{"word":"socialmedia","count":71},{"word":"time","count":71},{"word":"here","count":69},{"word":"today","count":68},{"word":"like","count":66},{"word":"adage","count":64},{"word":"know","count":60},{"word":"best","count":60},{"word":"techcrunch","count":58},{"word":"everyone","count":57},{"word":"think","count":56},{"word":"really","count":55},{"word":"video","count":53},{"word":"good","count":52},{"word":"beer","count":51},{"word":"friday","count":51},{"word":"some","count":50},{"word":"their","count":49},{"word":"than","count":47},{"word":"team","count":47},{"word":"data","count":47},{"word":"pong","count":47},{"word":"most","count":46}];
+
+		var width = 1000,
+    height = 940;
+
+var fill = d3.scale.category20();
+
+var nodes = d3.range(100).map(function(i) {
+  return {index: i};
+});
+
+var force = d3.layout.force()
+    .nodes(json)
+    .size([width, height])
+    .on("tick", tick)
+    .charge([-250])
+    .start();
+
+var svg = d3.select(".graph").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var node = svg.selectAll(".node")
+    .data(json)
+  	.enter().append("g")
+    .attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; })
+    .attr("class", "node")
+    .on("mouseover",function(d){
+    	//Get this bar's x/y values, then augment for the tooltip
+    	
+
+         //Update the tooltip position and value
+         d3.select("#tooltip")
+           .style("left",  d.x+400 + "px")
+           .style("top",  d.y + "px")           
+           .select("#count").text(d.count);
+           //Show the tooltip
+           d3.select("#tooltip").classed("hidden", false);
+
+         })
+    .on("mouseout", function() {
+           //Hide the tooltip
+           d3.select("#tooltip").classed("hidden", true);     
+     })
+    .call(force.drag);
+
+
+var circle = node.append("circle")
+    .attr("r", function(d){ return d.count/6})
+    .style("fill", function(d, i) { return fill(i%20); });
+    
+   
+
+node.append("text")
+      //.attr("dy", ".3em")
+      .style("text-anchor", "middle")
+      .style("cursor", "default")
+      .text(function(d) { return d.word });
+
+
+svg.style("opacity", 1e-6)
+  .transition()
+    .duration(1000)
+    .style("opacity", 1);
+
+
+function tick(e) {
+  node.attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; });
+}
+
+		function collide(alpha) {
+		  var quadtree = d3.geom.quadtree(nodes);
+		  return function(d) {
+		    var r = d.radius + radius.domain()[1] + padding,
+		        nx1 = d.x - r,
+		        nx2 = d.x + r,
+		        ny1 = d.y - r,
+		        ny2 = d.y + r;
+		    quadtree.visit(function(quad, x1, y1, x2, y2) {
+		      if (quad.point && (quad.point !== d)) {
+		        var x = d.x - quad.point.x,
+		            y = d.y - quad.point.y,
+		            l = Math.sqrt(x * x + y * y),
+		            r = d.radius + quad.point.radius + (d.color !== quad.point.color) * padding;
+		        if (l < r) {
+		          l = (l - r) / l * alpha;
+		          d.x -= x *= l;
+		          d.y -= y *= l;
+		          quad.point.x += x;
+		          quad.point.y += y;
+		        }
+		      }
+		      return x1 > nx2
+		          || x2 < nx1
+		          || y1 > ny2
+		          || y2 < ny1;
+		    });
+		  };
+		}
+
+
+	</script>
+
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>VISUAL</title>
+		<script src="d3.js" charset="utf-8"></script>
+	</head>
+	<body>
+		<div class="graph">
+		</div>
+		<div class="controls">
+			<button onclick="separarClusters()">Separar</button>
+		</div>
+		<style>
+			circle {
+			  stroke: #fff;
+			}
+		</style>
+	</body>
+
+	<script type="text/javascript">
+		var miniClusters = true;
+
+		//Definimos margenes 
+		var margin = {top: 0, right: 0, bottom: 0, left: 0},
+		    width = 960 - margin.left - margin.right,
+		    height = 600 - margin.top - margin.bottom;
+
+		var n = 200, //Cantidad nodos
+		    m = 10,	 //Cantidad Clusters
+		    padding = 6,
+		    radius = d3.scale.sqrt().range([0, 12]),
+		    color = d3.scale.category10().domain(d3.range(m));
+
+
+		var nodes = d3.range(n).map(function() { //Cambia VALUE por objeto
+		  var i = Math.floor(Math.random() * m), //Para color 
+		      v = (i + 1) / m * -Math.log(Math.random()); //Para el radio
+		  return {
+		    radius: radius(v),
+		    color: color(i)
+		  };
+		});
+
+		var force = d3.layout.force()
+		    .nodes(nodes)
+		    .size([width, height])
+		    .gravity(0)
+		    .charge(0)
+		    .on("tick", tick)
+		    .start();
+
+		var svg = d3.select(".graph").append("svg")
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		  	.append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		var circle = svg.selectAll("circle")
+		    .data(nodes)
+		  	.enter().append("circle")
+		    .attr("r", function(d) { return d.radius; })
+		    .style("fill", function(d) { return d.color; })
+		    .call(force.drag); //LLama a force.drag para over circulos
+
+		function tick(e) {
+
+			var maximos = getLargestNode();
+
+
+			/*for (var i = 0; i < maximos.length; i++) {
+				maximos[i].x = (i+1) * (width/10);
+				maximos[j].y = (height/2);
+			};*/
+
+			if(miniClusters){
+				circle.each(cluster(10 * e.alpha * e.alpha)); //clusterizo
+				circle.each(collide(.5))					 //Evito colisiones
+			}else{
+				circle.each(clusterFijos(10 * e.alpha * e.alpha));
+				circle.each(collide(0.0005))					 //Evito colisiones
+			}
+
+		  	circle
+		      .attr("cx", function(d) { return d.x; })
+		      .attr("cy", function(d) { return d.y; });
+		}
+
+		// Move d to be adjacent to the cluster node.
+		function cluster(alpha) {
+		  var max = {};
+
+		  // Find the largest node for each cluster.
+		  nodes.forEach(function(d) {
+		    if (!(d.color in max) || (d.radius > max[d.color].radius)) {
+		      max[d.color] = d; //max contiene el color con el maximo radio
+		    }
+		  });
+
+		  return function(d) {
+		    var node = max[d.color], //NODO MAS GRANDE
+		        l,
+		        r, //radio
+		        x,	//posicion x
+		        y,  //posicion y
+		        k = 1,
+		        i = -1;
+
+		    // For cluster nodes, apply custom gravity.
+		    if (node == d) {  //SI nodo mas GRANDE es igual a nodo que ENTRA agrego gravedad
+		      node = {x: width / 2, y: height / 2, radius: -d.radius};
+		      k = .1 * Math.sqrt(d.radius);
+		    }
+
+		    x = d.x - node.x;
+		    y = d.y - node.y;
+		    l = Math.sqrt(x * x + y * y);
+		    r = d.radius + node.radius;
+		    if (l != r) {
+		      l = (l - r) / l * alpha * k;
+		      d.x -= x *= l;
+		      d.y -= y *= l;
+		      //node.x += x;
+		      //node.y += y;
+		    }
+		  };
+		}
+
+
+		var longitud = width/10;
+		var posicionX = 0;
+		var posicionY =0;
+		function clusterFijos(alpha) {
+		  var max = {};
+
+		  // Find the largest node for each cluster.
+		  nodes.forEach(function(d) {
+		    if (!(d.color in max) || (d.radius > max[d.color].radius)) {
+		      max[d.color] = d; //max contiene el color con el maximo radio
+		    }
+		  });
+
+		  return function(d) {
+		    var node = max[d.color], //NODO MAS GRANDE
+		        l,
+		        r, //radio
+		        x,	//posicion x
+		        y,  //posicion y
+		        k = 1,
+		        i = -1;
+
+		    // For cluster nodes, apply custom gravity.
+		    if (node == d) {  //SI nodo mas GRANDE es igual a nodo que ENTRA agrego gravedad
+		      if(d.color == "#9467bd"){
+		      	posicionX = 100;
+		      	posicionY =150;
+		      }else if(d.color == "#ff7f0e"){
+		      	posicionX = 200;
+		      	posicionY =150;
+		      }else if(d.color == "#17becf"){
+		      	posicionX = 300;
+		      	posicionY =150;
+		      }else if(d.color == "#bcbd22"){
+		      	posicionX = 400;
+		      	posicionY =150;
+		      }else if(d.color == "#d62728"){
+		      	posicionX = 100;
+		      	posicionY =320;
+		      }else if(d.color == "#1f77b4"){
+		      	posicionX = 200;
+		      	posicionY =320;
+		      }else if(d.color == "#7f7f7f"){
+		      	posicionX = 300;
+		      	posicionY =320;
+		      }else if(d.color == "#8c564b"){
+		      	posicionX = 100;
+		      	posicionY =490;
+		      }else if(d.color == "#2ca02c"){
+		      	posicionX = 200;
+		      	posicionY =490;
+		      }else if(d.color == "#e377c2"){
+		      	posicionX = 300;
+		      	posicionY =490;
+		      }
+
+		      /*else if(d.color == "#bcbd22"){
+		      	posicion = 800;
+		      }else if(d.color == "#bcbd22"){
+		      	posicion = 800;
+		      }*/
+
+		      node = {x: posicionX, y: posicionY, radius: -d.radius};
+		      k = .1 * Math.sqrt(d.radius);
+
+
+		      
+		    }
+
+		    x = d.x - node.x;
+		    y = d.y - node.y;
+		    l = Math.sqrt(x * x + y * y);
+		    r = d.radius + node.radius;
+		    if (l != r) {
+		      l = (l - r) / l * alpha * k;
+		      d.x -= x *= l;
+		      d.y -= y *= l;
+		      //node.x += x;
+		      //node.y += y;
+		    }
+		  };
+		}
+
+
+
+
+
+
+
+
+
+
+
+		// Resolves collisions between d and all other circles.
+		function collide(alpha) {
+		  var quadtree = d3.geom.quadtree(nodes);
+		  return function(d) {
+		    var r = d.radius + radius.domain()[1] + padding,
+		        nx1 = d.x - r,
+		        nx2 = d.x + r,
+		        ny1 = d.y - r,
+		        ny2 = d.y + r;
+		    quadtree.visit(function(quad, x1, y1, x2, y2) {
+		      if (quad.point && (quad.point !== d)) {
+		        var x = d.x - quad.point.x,
+		            y = d.y - quad.point.y,
+		            l = Math.sqrt(x * x + y * y),
+		            r = d.radius + quad.point.radius + (d.color !== quad.point.color) * padding;
+		        if (l < r) {
+		          l = (l - r) / l * alpha;
+		          d.x -= x *= l;
+		          d.y -= y *= l;
+		          quad.point.x += x;
+		          quad.point.y += y;
+		        }
+		      }
+		      return x1 > nx2
+		          || x2 < nx1
+		          || y1 > ny2
+		          || y2 < ny1;
+		    });
+		  };
+		}
+
+		function separarClusters(){
+			if(miniClusters){
+				miniClusters = false;
+			}else{
+				miniClusters = true;
+			}
+			/*var max = {};
+			// Find the largest node for each cluster.
+			nodes.forEach(function(d) {
+			    if (!(d.color in max) || (d.radius > max[d.color].radius)) {
+			      max[d.color] = d; //max contiene el color con el maximo radio
+			    }
+			});
+			console.log(max);*/
+		}
+
+		function getLargestNode(){
+			var max = {};
+			// Find the largest node for each cluster.
+			nodes.forEach(function(d) {
+			    if (!(d.color in max) || (d.radius > max[d.color].radius)) {
+			      max[d.color] = d; //max contiene el color con el maximo radio
+			    }
+			});
+			return max;
+		}
+
+	</script>
+
+</html>

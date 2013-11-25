@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>VISUAL</title>
+		<script src="d3.js" charset="utf-8"></script>
+	</head>
+	<body>
+		<div class="graph">
+		</div>
+
+		<style>	
+			.node {
+  				stroke-width: 1.5px;
+			}
+		</style>
+	</body>
+
+	<script type="text/javascript">
+		var json = eval('[{"word":"http","count":1941},{"word":"social","count":417},{"word":"media","count":301},{"word":"your","count":236},{"word":"this","count":214},{"word":"facebook","count":194},{"word":"what","count":187},{"word":"with","count":182},{"word":"that","count":180},{"word":"twitter","count":179},{"word":"mashwork","count":156},{"word":"thanks","count":146},{"word":"great","count":134},{"word":"mashable","count":126},{"word":"google","count":122},{"word":"about","count":119},{"word":"from","count":116},{"word":"have","count":109},{"word":"more","count":107},{"word":"infographic","count":105},{"word":"will","count":104},{"word":"just","count":93},{"word":"happy","count":86},{"word":"marketing","count":84},{"word":"check","count":83},{"word":"forbes","count":81},{"word":"love","count":76},{"word":"socialmedia","count":71},{"word":"time","count":71},{"word":"here","count":69},{"word":"today","count":68},{"word":"like","count":66},{"word":"adage","count":64},{"word":"know","count":60},{"word":"best","count":60},{"word":"techcrunch","count":58},{"word":"everyone","count":57},{"word":"think","count":56},{"word":"really","count":55},{"word":"video","count":53},{"word":"good","count":52},{"word":"beer","count":51},{"word":"friday","count":51},{"word":"some","count":50},{"word":"their","count":49},{"word":"than","count":47},{"word":"team","count":47},{"word":"data","count":47},{"word":"pong","count":47},{"word":"most","count":46}]');
+
+		var width = 960,
+    height = 500;
+
+var fill = d3.scale.category10();
+
+var nodes = d3.range(100).map(function(i) {
+  return {index: i};
+});
+
+var force = d3.layout.force()
+    .nodes(nodes)
+    .size([width, height])
+    .on("tick", tick)
+    .start();
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var node = svg.selectAll(".node")
+    .data(nodes)
+  	.enter().append("g")
+    .attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; })
+    .attr("class", "node")
+    .call(force.drag)
+
+
+node.append("circle")
+    .attr("r", 25)
+    .style("fill", function(d, i) { return fill(i & 3); })
+    //.style("stroke", function(d, i) { return d3.rgb(fill(i & 3)).darker(2); })
+    
+    //.on("mousedown", function() { d3.event.stopPropagation(); });
+
+node.append("text")
+      //.attr("dy", ".3em")
+      .style("text-anchor", "middle")
+      .text(function(d) { return "hola" });
+
+
+svg.style("opacity", 1e-6)
+  .transition()
+    .duration(1000)
+    .style("opacity", 1);
+
+d3.select("body")
+    .on("mousedown", mousedown);
+
+function tick(e) {
+
+  // Push different nodes in different directions for clustering.
+  /*var k = 6 * e.alpha;
+  nodes.forEach(function(o, i) {
+    o.y += i & 1 ? k : -k;
+    o.x += i & 2 ? k : -k;
+  });*/
+
+  node.attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; });
+}
+
+/*function mousedown() {
+  nodes.forEach(function(o, i) {
+    o.x += (Math.random() - .5) * 40;
+    o.y += (Math.random() - .5) * 40;
+  });
+  force.resume();
+}*/
+
+
+
+	</script>
+
+</html>
