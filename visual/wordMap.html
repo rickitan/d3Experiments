@@ -90,7 +90,6 @@ var node = svg.selectAll(".node")
     .attr("transform", function(d) { return "translate(" + [d.x, d.y] + ")"; })
     .attr("class", "node")
     .on("mouseover",function(d){
-    	//Get this bar's x/y values, then augment for the tooltip
     	
 
          //Update the tooltip position and value
@@ -98,12 +97,10 @@ var node = svg.selectAll(".node")
            .style("left",  d.x+400 + "px")
            .style("top",  d.y + "px")           
            .select("#count").text(d.count);
-           //Show the tooltip
            d3.select("#tooltip").classed("hidden", false);
 
          })
     .on("mouseout", function() {
-           //Hide the tooltip
            d3.select("#tooltip").classed("hidden", true);     
      })
     .call(force.drag);
@@ -116,7 +113,6 @@ var circle = node.append("circle")
    
 
 node.append("text")
-      //.attr("dy", ".3em")
       .style("text-anchor", "middle")
       .style("cursor", "default")
       .text(function(d) { return d.word });

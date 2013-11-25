@@ -52,8 +52,6 @@
 				<div id="tooltipContainer" class="tooltipContainer">
 					<div id="tooltip" class="hidden">
 						<strong><p id="clusterTitle" style="text-align:center"></p></strong>
-						<!--<p><strong>Fabricante: </strong><span id="tool_fab">100</span></p>
-						<p><strong>Alerta: </strong><span id="tool_alerta">100</span></p>-->
 		   			</div>
 		   		</div>
 			</div>
@@ -115,7 +113,6 @@
 	    		this.vis = d3.select(".graph").append("svg")
 					    .attr("width", width)
 					    .attr("height", height)
-					    //.style("margin-top","-10%")
 					    .attr("align","center")
 					  	.attr("id", "svg_vis");
 	    	}
@@ -173,7 +170,6 @@
 
 										var append = $("#tooltipContainer").clone();
 										append.children("#tooltip").addClass("tooltipAdded");
-										//$(".graph").append(append.html()).show("slow");
 
 										$(append).hide().appendTo(".graph").fadeIn(1500);
 
